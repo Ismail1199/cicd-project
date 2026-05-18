@@ -10,7 +10,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/ismailkachanchery/cicd-project.git'
+                git 'https://github.com/ismail1199/cicd-project.git'
             }
         }
 
@@ -25,8 +25,8 @@ pipeline {
 
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
+                    usernameVariable: 'ismailkachanchery',
+                    passwordVariable: 'Mims@2310284'
                 )]) {
 
                     sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
