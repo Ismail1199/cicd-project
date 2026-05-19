@@ -2,24 +2,24 @@ apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: cicd-demo
+  name: frontend
 
 spec:
   replicas: 2
 
   selector:
     matchLabels:
-      app: cicd-demo
+      app: frontend
 
   template:
     metadata:
       labels:
-        app: cicd-demo
+        app: frontend
 
     spec:
       containers:
-      - name: cicd-demo
-        image: ismailkachanchery/cicd-demo:latest
+      - name: frontend
+        image: ismailkachanchery/devops-frontend:latest
         imagePullPolicy: Always
 
         ports:

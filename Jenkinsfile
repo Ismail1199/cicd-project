@@ -2,38 +2,57 @@ pipeline {
 
     agent any
 
-    environment {
-        IMAGE_NAME = "ismailkachanchery/cicd-demo"
-    }
-
     stages {
 
-        stage('Build Docker Image') {
+        stage('Build Backend') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh 'cd backend && mvn clean package'
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Build Frontend Image') {
+            steps {
+                sh 'docker build -t ismailkachanchery/devops-frontend:latest frontend'
+            }
+        }
+
+        stage('Build Backend Image') {
+            steps {
+                sh 'docker build -t ismailkachanchery/devops-backend:latest backend'
+            }
+        }
+
+        stage('Push Images') {
+
             steps {
 
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
-                )]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'USERNAME',
+                        passwordVariable: 'PASSWORD'
+                    )
+                ]) {
 
-                    sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
+                    sh '''
+                    echo $PASSWORD | docker login -u $USERNAME --password-stdin
 
-                    sh 'docker push $IMAGE_NAME'
+                    docker push ismailkachanchery/devops-frontend:latest
+                    docker push ismailkachanchery/devops-backend:latest
+                    '''
                 }
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy To Kubernetes') {
+
             steps {
-                sh 'kubectl apply -f k8s/deployment.yaml'
-                sh 'kubectl apply -f k8s/service.yaml'
+
+                sh 'kubectl apply -f k8s/'
+
+                sh 'kubectl rollout restart deployment/frontend'
+
+                sh 'kubectl rollout restart deployment/backend'
             }
         }
     }
