@@ -4,32 +4,57 @@ pipeline {
 
     stages {
 
-        stage('Build Backend') {
-    steps {
-        sh '''
-        docker run --rm \
-          -v $WORKSPACE/backend:/app \
-          -w /app \
-          maven:3.9.9-eclipse-temurin-17 \
-          mvn clean package
-        '''
+        stage('Debug Workspace') {
+            steps {
+                sh '''
+                echo "========== DEBUG =========="
+                echo "WORKSPACE=$WORKSPACE"
+                pwd
+
+                echo ""
+                echo "ROOT CONTENTS:"
+                ls -la
+
+                echo ""
+                echo "BACKEND CONTENTS:"
+                ls -la backend
+
+                echo ""
+                echo "POM FILE:"
+                find . -name pom.xml
+                '''
             }
-       }
+        }
+
+        stage('Build Backend') {
+            steps {
+                sh '''
+                docker run --rm \
+                -v /var/jenkins_home/workspace/cicd-pipeline/backend:/app \
+                -w /app \
+                maven:3.9.9-eclipse-temurin-17 \
+                mvn clean package
+                '''
+            }
+        }
 
         stage('Build Frontend Image') {
             steps {
-                sh 'docker build -t ismailkachanchery/devops-frontend:latest frontend'
+                sh '''
+                docker build -t ismailkachanchery/devops-frontend:latest frontend
+                '''
             }
         }
 
         stage('Build Backend Image') {
             steps {
-                sh 'docker build -t ismailkachanchery/devops-backend:latest backend'
+                sh '''
+                docker build -t ismailkachanchery/devops-backend:latest backend
+                '''
             }
         }
 
         stage('Push Images') {
-
             steps {
 
                 withCredentials([
@@ -51,14 +76,19 @@ pipeline {
         }
 
         stage('Deploy To Kubernetes') {
-
             steps {
 
-                sh 'kubectl apply -f k8s/'
+                sh '''
+                kubectl apply -f k8s/
+                '''
 
-                sh 'kubectl rollout restart deployment/frontend'
+                sh '''
+                kubectl rollout restart deployment/frontend
+                '''
 
-                sh 'kubectl rollout restart deployment/backend'
+                sh '''
+                kubectl rollout restart deployment/backend
+                '''
             }
         }
     }
