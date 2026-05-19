@@ -27,16 +27,10 @@ pipeline {
         }
 
         stage('Build Backend') {
-            steps {
-                sh '''
-                docker run --rm \
-                -v /var/jenkins_home/workspace/cicd-pipeline/backend:/app \
-                -w /app \
-                maven:3.9.9-eclipse-temurin-17 \
-                mvn clean package
-                '''
-            }
-        }
+    steps {
+        sh 'cd backend && mvn clean package'
+    }
+    }
 
         stage('Build Frontend Image') {
             steps {
